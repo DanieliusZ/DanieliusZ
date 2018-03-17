@@ -30,7 +30,7 @@
   export default {
     data(){
       return{
-        adminId:'pSMXNyec1AfD666QYpxFXxpkv3I2',
+        adminId:'lWBtrx64p6PkP6jKvC84jxTaEfr1',
       }
     },
     computed:{

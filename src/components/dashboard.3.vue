@@ -1,10 +1,5 @@
 <template>
   <v-container>
-    <v-layout row v-if="error">
-      <v-flex>
-        <app-alert @dismissed="onDismissed" :text="error.message"></app-alert>
-      </v-flex>
-    </v-layout>
       <v-layout row>
           <v-flex d-inline-flex>
               <v-layout row>
@@ -29,7 +24,16 @@
               <v-date-picker class="picker" landscape color="teal darken-4" v-model="date" first-day-of-week=1 locale="lt-LT" autosave></v-date-picker>
           </v-flex>
       </v-layout>
-      <v-layout row d-inline mt-2>
+        <v-layout row wrap v-if="loading">
+            <v-flex xs12 class="text-xs-center">
+                <v-progress-circular
+                indeterminate
+                class="primary--text"
+                :width="7"
+                :size="70"></v-progress-circular>
+            </v-flex>
+        </v-layout>
+      <v-layout row d-inline mt-2 v-else>
               <v-flex md6>
                   <v-card>
                       <v-card-title>
@@ -51,16 +55,6 @@
                     <td class="text-xs-right">{{ props.item.break }}</td>
                     </template>
                 </v-data-table>
-                <v-card>
-                    <v-card-text>
-                        <h3>
-                            Total work hours this month: {{currentMonthTotalHours | toDigits }}
-                        </h3>
-                        <h3>
-                            Total earned:{{currentMonthTotalEarned}}£
-                        </h3>
-                    </v-card-text>
-                </v-card>
               </v-flex>
               <v-flex md6>
                   <v-card>
@@ -111,17 +105,6 @@
                     <td class="text-xs-right">{{ props.item.break }}</td>
                     </template>
                 </v-data-table>
-                <v-card>
-                    <v-card-text>
-                        <h3>
-                            Total work selected month: {{previousMonthTotalHours | toDigits }}
-                        </h3>
-                        <!-- rate:{{previousMonthRate}} -->
-                        <h3>
-                            Total earned:{{previousMonthTotalEarned}}
-                        </h3>
-                    </v-card-text>
-                </v-card>
               </v-flex>
       </v-layout>
   </v-container>
@@ -172,13 +155,6 @@ export default {
             return (Number.parseInt(this.endh)*60+Number.parseInt(this.endm))-(Number.parseInt(this.sth)*60+Number.parseInt(this.stm)+Number.parseInt(this.breakdur))
         },
         currentMonthInfo(){
-            if(!this.darbInfo){
-                return []
-            }
-            if(!this.darbInfo[this.userId]) {
-                return []
-            }
-
             let exists=this.darbInfo[this.userId][this.year]
             if(exists){
                 let data=this.darbInfo[this.userId][this.year][this.month]
@@ -192,13 +168,6 @@ export default {
             else return []
         },
         previousMonthInfo(){
-            if(!this.darbInfo){
-                return []
-            }
-            if(!this.darbInfo[this.userId]) {
-                return []
-            }
-
             let exists=this.darbInfo[this.userId][this.yearOfPreviousMonth]
             if (exists) {
                 let data=this.darbInfo[this.userId][this.yearOfPreviousMonth][this.previousMonth]
@@ -211,113 +180,12 @@ export default {
             }
             else return []
         },
-        currentMonthTotalHours(){
-            if(!this.darbInfo){
-                return 0
-            }
-            if(!this.darbInfo[this.userId]) {
-                return 0
-            }
-            let exists=this.darbInfo[this.userId][this.year]
-            if(exists){
-                let data=this.darbInfo[this.userId][this.year][this.month]
-                    if(data){
-                        let total=[]
-                        let cmdata=Object.values(data)
-                        cmdata.forEach(element => {
-                            total.push(element.totalTime)
-                        });
-                        total=total.reduce((a,b)=>a+b,0)
-                        return total
-                    } else return 0
-            }
-            else return 0
-        },
-        previousMonthTotalHours(){
-            if(!this.darbInfo){
-                return 0
-            }
-            if(!this.darbInfo[this.userId]) {
-                return 0
-            }
-            let exists=this.darbInfo[this.userId][this.yearOfPreviousMonth]
-            if (exists) {
-                let data=this.darbInfo[this.userId][this.yearOfPreviousMonth][this.previousMonth]
-                    if(data){
-                        let total=[]
-                        let cmdata=Object.values(data)
-                        cmdata.forEach(element => {
-                            total.push(element.totalTime)
-                        });
-                        total=total.reduce((a,b)=>a+b,0)
-                        return total
-                    } else return 0
-            }
-            else return 0
-        },
-        currentMonthRate(){
-            if(!this.darbInfo){
-                return 0
-            }
-            if(!this.darbInfo[this.userId]) {
-                return 0
-            }
-            if(!this.darbInfo[this.userId][this.year]){
-                return 0
-            }
-            let exists=this.darbInfo[this.userId][this.year]['rates']
-            if(exists){
-                let m=this.month
-                while(m>=0){
-                    let data=this.darbInfo[this.userId][this.yearOfPreviousMonth]['rates'][m]
-                    if(data){
-                        return data
-                    } m--
-                }
-            }
-            else return 0
-        },          
-        previousMonthRate(){
-            if(!this.darbInfo){
-                return 0
-            }
-            if(!this.darbInfo[this.userId]) {
-                return 0
-            }
-            if(!this.darbInfo[this.userId][this.yearOfPreviousMonth]){
-                return 0
-            }
-            let exists=this.darbInfo[this.userId][this.yearOfPreviousMonth]['rates']
-            if(exists){
-                let m=this.previousMonth
-                while(m>=0){
-                    let data=this.darbInfo[this.userId][this.yearOfPreviousMonth]['rates'][m]
-                    if(data){
-                        return data
-                    } m--
-                }
-            }
-            else return 0
-        },
-        currentMonthTotalEarned(){
-            if(!this.currentMonthTotalHours||!this.currentMonthRate){
-                return 0
-            }
-            return this.currentMonthTotalHours*this.currentMonthRate/60
-        },
-        previousMonthTotalEarned(){
-            if(!this.previousMonthTotalHours||!this.previousMonthRate){
-                return 0
-            }
-            return this.previousMonthTotalHours*this.previousMonthRate/60
-        },
-        error(){
-            return this.$store.getters.error
+        loading(){
+            return this.$store.getters.loading
         }
     },
     methods:{
         onSaveInfo(){
-            console.log(new Date(this.date).getDate())
             const workInfo={
                 workstartedh:Number.parseInt(this.sth),
                 workstartedm:Number.parseInt(this.stm),
@@ -330,28 +198,28 @@ export default {
                 day:new Date(this.date).getDate(),
                 totalTime:this.totalWork              
             }
-            if(this.totalWork>0) {
-                this.$store.dispatch('saveWorkTime', workInfo)
-            } else {
-                this.$store.dispatch('setError', {message:'Are you sure you entered correct hours?'})
-            }
-            
+            this.$store.dispatch('saveWorkTime', workInfo)
         },
         onMonthSelection(){
             this.menu=false
             this.yearOfPreviousMonth=new Date(this.selectedMonth).getFullYear()
             this.previousMonth=new Date(this.selectedMonth).getMonth()
-            // let data=this.darbInfo[this.userId][this.yearOfPreviousMonth][this.previousMonth]
-            //     if(data){
-            //         this.previousMonthInfo=Object.values(data).sort(function(a,b){
-            //             return a.day-b.day
-            //         })
+            let data=this.darbInfo[this.userId][this.yearOfPreviousMonth][this.previousMonth]
+                if(data){
+                    this.previousMonthInfo=Object.values(data).sort(function(a,b){
+                        return a.day-b.day
+                    })
                
-            //     }else this.previousMonthInfo=[]
+                }else this.previousMonthInfo=[]
         },
-        onDismissed (){
-            this.$store.dispatch('clearError')
+        shouldBeLoaded:function(){
+            setTimeout(()=>{
+                this.$store.dispatch('setLoading', false)
+            }, 1000)
         }
+    },
+    beforeCreate(){
+        this.$store.dispatch('setLoading', true)
     },
     created(){      
         if(this.month>0){
@@ -362,7 +230,9 @@ export default {
             this.yearOfPreviousMonth=this.year
         } else {this.yearOfPreviousMonth=this.year-1}
 
-        this.$store.dispatch('clearError')
+    },
+    mounted(){
+        this.shouldBeLoaded()
     }
 }
 </script>
