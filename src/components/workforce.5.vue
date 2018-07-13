@@ -1,5 +1,5 @@
 <template>
-    <v-container v-if="userId===adminId">
+    <v-container v-if="userId==='lWBtrx64p6PkP6jKvC84jxTaEfr1'||userId==='pSMXNyec1AfD666QYpxFXxpkv3I2'">
         <v-layout row v-if="error">
             <v-flex>
                 <app-alert @dismissed="onDismissed" :text="error.message"></app-alert>
@@ -12,14 +12,14 @@
                         <v-list-tile v-for="(item, index) in workersInfo" :key="index" >
                             <v-list-tile-content >
                                 <v-btn @click="identifyWorker(index, item['.key'])" outline active-class="pactive" :class="{ pactive: selectedWorkerArrN===index}">
-                                {{item.name}}
+                                {{item.name}}                                
                                 </v-btn>
                             </v-list-tile-content>
                         </v-list-tile>
-                    </v-list>
+                    </v-list> 
                     <v-flex class="text-xs-right aligned">
                         <input v-model="renamer" class="text-xs-left forname" type="text">
-                        <v-btn type="submit" @click="rename">Change Name</v-btn>
+                        <v-btn type="submit" @click="rename">Change Name</v-btn> 
                     </v-flex>
                 </v-layout>
             </v-card>
@@ -28,8 +28,8 @@
             <v-flex md8 mr-2>
                 <v-card>
                     <v-card-title>
-                        <h3 pa-2 v-if="currentWorkerName">
-                            Info of {{currentWorkerName}} for {{month|toMonths}} {{year}}
+                        <h3 pa-2>
+                            Info of {{currentWorkerName}}
                         </h3>
 
                     </v-card-title>
@@ -46,7 +46,7 @@
                             >
                                 <v-text-field
                                 slot="activator"
-                                label="Select another month"
+                                label="Select month you want to view"
                                 v-model="selectedMonth"
                                 prepend-icon="event"
                                 readonly
@@ -76,7 +76,7 @@
                     <td class="text-xs-right">{{ props.item.totalTime | toDigits}}</td>
                     <td class="text-xs-right">{{ props.item.saveTime | date}}</td>
                     </template>
-                </v-data-table>
+                </v-data-table>                
             </v-flex>
             <v-flex md4>
                 <v-card class="text-xs-center">
@@ -106,13 +106,16 @@
                                     <v-card-actions>
                                     <v-spacer></v-spacer>
                                     <v-btn flat color="primary" @click="cancel">Cancel</v-btn>
+                                    <!-- <v-btn flat color="primary" @click="hourlyRateMenu=false">OK</v-btn> -->
                                     </v-card-actions>
                                 </template>
                             </v-date-picker>
-                        </v-menu>
+                        </v-menu>             
+                    <!-- <span class="text-xs-center"> -->
                         Rate: <input v-model="hourlyRate" class="text-xs-center" type="number">
                         <v-btn small @click="onSetHourlyRate">Set Hourly Rate</v-btn>
-                </v-card>
+                    <!-- </span> -->
+                </v-card>    
                 <v-divider></v-divider>
                 <v-card class="text-xs-center">
                     <v-card-text>
@@ -127,9 +130,9 @@
                             <h4>Earned</h4>
                             <p>
                                 {{earnedThisMonth}}£
-                            </p>
+                            </p> 
                         </v-flex>
-                    </v-layout>
+                    </v-layout>   
                 </v-card>
                 <v-divider ></v-divider>
                 <v-card class="text-xs-center">
@@ -152,9 +155,13 @@
                         <v-expansion-panel  v-if="currentWorkerName!==''">
                             <v-expansion-panel-content>
                                 <div slot="header">Monthly information</div>
-                                <v-card-text v-for="(item, index) in selectedYearEarnings" :key="index">
-                                    <b>{{item.month|toMonths}}</b> Total work hours - {{item.totalWorkTime|toDigits}} | Total earned: {{item.totalEarned|toDecim}}£ | Rate: {{item.rate}}£
-                                </v-card-text>
+                                <v-list>
+                                    <v-list-tile class="nofloat" v-for="(item, index) in selectedYearEarnings" :key="index">
+                                        <v-list-tile-content class="smaled">
+                                            <b>{{item.month|toMonths}}</b> Total work hours - {{item.totalWorkTime|toDigits}} | Total earned: {{item.totalEarned}}£
+                                        </v-list-tile-content>
+                                    </v-list-tile>
+                                </v-list>
                             </v-expansion-panel-content>
                         </v-expansion-panel>
                     </v-layout>
@@ -172,12 +179,12 @@
                                         Amount: <input block v-model="monthlyPayment" class="text-xs-left extend" type="number"> £
                                     </div>
                                     <div class="spaced">
-                                        Description: <input block v-model="paymentDescription" class="text-xs-left extend" type="text">
+                                        Description: <input block v-model="paymentDescription" class="text-xs-left extend" type="text">                                 
                                     </div>
-                                    <v-btn block type="submit" @click="addPayment">Add Payment</v-btn>
-                                </v-card-text>
-                            </v-card>
-                        </v-flex>
+                                    <v-btn block type="submit" @click="addPayment">Add Payment</v-btn>                                    
+                                </v-card-text>                             
+                            </v-card>  
+                        </v-flex>                     
                     </v-layout>
                     <v-divider></v-divider>
                     <v-card>
@@ -224,19 +231,18 @@
 
 <script>
 import {db} from '../firebase'
-import {adminID} from '../admin';
-
 export default {
     data(){
         return{
-            adminId:adminID,
             userId:this.$store.getters.user.id,
             workersInfo:{},
+            currentWorkerName:'',
             menu:false,
             hourlyRateMenu:false,
             selectedMonth:null,
             selectedWorkerId:null,
             selectedWorkerArrN:null,
+            selectedMonthInfo:[],
             headers: [
               {
                 text: 'Day',
@@ -253,7 +259,10 @@ export default {
             monthlyPayment:0,
             year:new Date().getFullYear(),
             month:new Date().getMonth(),
+            selectedYearHours:0,
             paymentDescription:'',
+            // selectedYearPayments:0,
+            // selectedYearSeparatePayments:{},
             renamer:'',
             monthOfSelectedRate:null
         }
@@ -268,20 +277,6 @@ export default {
         }
     },
     computed:{
-        selectedMonthInfo(){
-            if(!this.selectedWorkerId){
-                return []
-            }
-            let data=this.workersInfo[this.selectedWorkerArrN][this.year][this.month]
-            if(data){
-                let info=Object.values(data)
-                info.sort((a,b)=>{
-                    return a.day-b.day
-                })
-                return info
-            }
-            else return []
-        },
         monthTotalWork(){
             let totalMinutes=[]
             if(this.selectedMonthInfo){
@@ -308,29 +303,11 @@ export default {
                 while(m>=0){
                     let data=this.workersInfo[this.selectedWorkerArrN][this.year]['rates'][m]
                     if(data){
-                        return (data*this.monthTotalWork/60).toFixed(2)
+                        return data*this.monthTotalWork/60
                     } m--
                 }
             }
             else return 0
-        },
-        selectedYearHours(){
-            if(!this.selectedWorkerId){
-                return 0
-            }
-            let hoursByMonth=[]
-            let hoursData=this.workersInfo[this.selectedWorkerArrN][this.year]
-            if(hoursData){
-                hoursData=Object.values(hoursData)
-                hoursData.forEach((element)=>{
-                    element=Object.values(element)
-                    element.forEach(el=>{
-                        if(el.hasOwnProperty('totalTime'))
-                        hoursByMonth.push(el.totalTime)
-                    })
-                })
-                return hoursByMonth.reduce((a,b)=>a+b,0)
-            } else return 0
         },
         selectedYearEarnings(){
             if(!this.workersInfo){
@@ -345,16 +322,45 @@ export default {
             let exists=this.workersInfo[this.selectedWorkerArrN][this.year]['rates']
             if(exists&&this.workersInfo[this.selectedWorkerArrN]['.key']==this.selectedWorkerId){
                 let initial=this.workersInfo[this.selectedWorkerArrN][this.year]
+                // let monthCount=Object.keys(initial).length-1
 
-                let {rates, payments, ...initial2}=initial
-
-                initial = Object.keys(initial).reduce((obj, key) => {
-                    if(key !== 'rates'&& key !=='payments'){
-                        obj[key] = initial[key]
-                    }
-                    return obj;
-                }, {});
                 let initialArr=Object.values(initial)
+                // .slice(0,monthCount)
+
+                //finding solution
+                // console.log(initialArr)
+                let count=0
+                let indexes=[]
+                Object.values(initial).forEach(el=>{
+                    // console.log(Object.keys(el))
+                    if(Array.isArray(el)){
+                        count=count+1
+                        indexes.push(Object.values(initial).indexOf(el))
+                    }
+                    // if(el[0].hasOwnProperty('amount')){
+                    //     indexes.push(Object.values(initial).indexOf(el))
+                    // }
+                    // console.log(Object.getOwnPropertyNames(el))
+                    let Arrayed=Object.values(el)
+                    // if(el.hasOwnProperty('payments')){
+                    //     console.log('payment it is')
+                    // }
+                    // console.log(Arrayed)
+                    Arrayed.forEach(elem=>{
+                    if(elem.hasOwnProperty('amount')){
+                        count=count+1
+                        indexes.push(Object.values(initial).indexOf(el))                        
+                    }
+                    })
+                })
+                indexes=[...new Set(indexes)]
+                indexes.sort((a,b)=>b-a)
+                // console.log(indexes)
+                // console.log(Array.isArray(indexes))
+                indexes.forEach(el=>{
+                    initialArr.splice(el,1)
+                })
+                // console.log(initialArr)
 
                 let finalInfo=[]
                 initialArr.forEach(el=>{
@@ -378,7 +384,8 @@ export default {
                 })
                 return finalInfo
             }
-            else return 0
+            else return 0                   
+            // return Math.round(this.selectedYearHours*this.hourlyRate/60*100)/100
         },
         selectedYearTotalEarnings(){
             if(!this.selectedYearEarnings||!this.selectedYearHours){
@@ -389,7 +396,7 @@ export default {
                     totalEarnings.push(el.totalEarned)
                 })
                 totalEarnings=totalEarnings.reduce((a,b)=>a+b,0)
-                return totalEarnings.toFixed(2)
+                return totalEarnings
             }
         },
         selectedYearPayments(){
@@ -429,19 +436,10 @@ export default {
             else return paymentInfo
         },
         currentBalance(){
-            if(!this.selectedYearTotalEarnings){
+            if(!this.selectedYearPayments||!this.selectedYearTotalEarnings){
                 return 0
             }
             return this.selectedYearPayments-this.selectedYearTotalEarnings
-        },
-        currentWorkerName(){
-            if(!this.selectedWorkerId){
-                return null
-            }
-            if(this.workersInfo[this.selectedWorkerArrN]['.key']==this.selectedWorkerId){
-                return this.workersInfo[this.selectedWorkerArrN].name
-            }
-            return null
         },
         error(){
             return this.$store.getters.error
@@ -450,15 +448,59 @@ export default {
     methods:{
         onMonthSelection(){
             this.menu=false
+            let info
             if(!this.selectedWorkerId){
                 this.$store.dispatch('setError', {message:'Are you sure you have selected worker?'})
                 return
             }
 
+            this.currentWorkerName=this.workersInfo[this.selectedWorkerArrN].name
+
             if(this.selectedMonth){
                 this.year=new Date(this.selectedMonth).getFullYear()
                 this.month=new Date(this.selectedMonth).getMonth()
             }
+
+            let data=this.workersInfo[this.selectedWorkerArrN][this.year][this.month]
+            if(data){
+                info=Object.values(data)
+                info.sort((a,b)=>{
+                return a.day-b.day
+                })
+                this.selectedMonthInfo=info   
+            }
+            else if(!data){
+                this.selectedMonthInfo=[]
+            }
+
+            // let paymentInfo=(this.workersInfo[this.selectedWorkerArrN][this.year].payments)
+            // if(paymentInfo){
+            //     console.log(paymentInfo)
+            //     this.selectedYearSeparatePayments=paymentInfo
+            //     paymentInfo=Object.values(paymentInfo)
+            //     let arr=[]
+            //     paymentInfo.forEach(el=>{
+            //         arr.push(parseInt(el))
+            //     })
+            //     this.selectedYearPayments=arr.reduce((a,b)=>a+b,0)
+            // }else{
+            //     this.selectedYearPayments=0
+            // }
+
+            let hoursByMonth=[]
+            let hoursData=this.workersInfo[this.selectedWorkerArrN][this.year]
+            if(hoursData){
+                hoursData=Object.values(hoursData)
+                hoursData.forEach((element)=>{
+                    element=Object.values(element)
+                    element.forEach(el=>{
+                        if(el.hasOwnProperty('totalTime'))
+                        hoursByMonth.push(el.totalTime)
+                    })                    
+
+                })
+                this.selectedYearHours=hoursByMonth.reduce((a,b)=>a+b,0)
+            }else this.selectedYearHours=0
         },
         addPayment(){
             if(!this.selectedWorkerId){
@@ -474,6 +516,15 @@ export default {
             this.$store.dispatch('saveNewPayment', newPayment)
             this.monthlyPayment=0
             this.paymentDescription=''
+            // let paymentInfo=(this.workersInfo[this.selectedWorkerArrN][this.year].payments)
+            // if(paymentInfo){
+            //     paymentInfo=Object.values(paymentInfo)
+            //     let arr=[]
+            //     paymentInfo.forEach(el=>{
+            //         arr.push(parseInt(el))
+            //     })
+            //     this.selectedYearPayments=arr.reduce((a,b)=>a+b,0)
+            // }
         },
         removePayment(a){
             const load={
@@ -497,8 +548,12 @@ export default {
                 load:{name:this.renamer}
             }
             this.$store.dispatch('changeName', newName)
-            this.renamer=''
+            this.renamer=''          
         },
+        // onSetMonthForRate(){
+        //     this.hourlyRateMenu=false
+        //     console.log(this.monthOfSelectedRate)
+        // },
         onSetHourlyRate(){
             if(!this.selectedWorkerId||!this.monthOfSelectedRate){
                 this.$store.dispatch('setError', {message:'Are you sure you have selected worker and month?'})
@@ -508,9 +563,9 @@ export default {
             let load={
                 worker:this.selectedWorkerId,
                 year:new Date(this.monthOfSelectedRate).getFullYear(),
-                rate:{[month]:parseFloat(this.hourlyRate)}
+                rate:{[month]:parseInt(this.hourlyRate)}
             }
-            this.$store.dispatch('setHourlyRate', load)
+            this.$store.dispatch('setHourlyRate', load)   
         },
         onDismissed (){
             this.$store.dispatch('clearError')
@@ -526,12 +581,12 @@ export default {
     h4{
         width:100%;
     }
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button {
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    margin: 0;
+    margin: 0; 
     }
     input{
         border:1px solid teal;

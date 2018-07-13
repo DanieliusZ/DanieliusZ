@@ -27,10 +27,11 @@
 </template>
 
 <script>
+  import {adminID} from './admin';
   export default {
     data(){
       return{
-        adminId:'pSMXNyec1AfD666QYpxFXxpkv3I2',
+        adminId:adminID,
       }
     },
     computed:{

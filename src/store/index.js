@@ -29,26 +29,26 @@ export const store = new Vuex.Store({
         },
     },
     actions:{
-        namingYourself({commit, getters}, payload){
-            const userid=getters.user.id
-            db.ref('/workers/'+userid).once('value')
-                .then((data)=>{
-                    if(!data.val()){
-                        db.ref('/workers/'+userid).push(payload)
-                    }
-                    else{
-                        const key=Object.keys(data.val())
-                        console.log(key)
-                        db.ref('/workers/'+userid).update(payload)
-                    }
-                })
-                .then(()=>{
-                    console.log('you are saved')
-                })
-                .catch(error=>{
-                    console.log(error)
-                })
-        },
+        // namingYourself({commit, getters}, payload){
+        //     const userid=getters.user.id
+        //     db.ref('/workers/'+userid).once('value')
+        //         .then((data)=>{
+        //             if(!data.val()){
+        //                 db.ref('/workers/'+userid).push(payload)
+        //             }
+        //             else{
+        //                 const key=Object.keys(data.val())
+        //                 // console.log(key)
+        //                 db.ref('/workers/'+userid).update(payload)
+        //             }
+        //         })
+        //         .then(()=>{
+        //             console.log('you are saved')
+        //         })
+        //         .catch(error=>{
+        //             console.log(error)
+        //         })
+        // },
         saveWorkTime({commit, getters}, payload){
             const user=getters.user
             db.ref('/workers/'+user.id+'/'+payload.year+'/'+payload.month).orderByChild("day").equalTo(payload.day).once('value')
@@ -72,7 +72,16 @@ export const store = new Vuex.Store({
             let userid=payload.workerId
             db.ref('/workers/'+[userid]+'/'+payload.year+'/payments').push(payload.amount)
         },
-        signUserUp({commit},payload){
+        removePayment({},payload){
+            db.ref('/workers/'+[payload.workerId]+'/'+payload.year+'/payments').child(payload.paymentId).remove()
+        },
+        changeName({commit}, payload){
+            db.ref('/workers/'+[payload.id]+'/').update(payload.load)
+        },
+        setHourlyRate({}, payload){
+            db.ref('/workers/'+[payload.worker]+'/'+payload.year+'/rates').update(payload.rate)
+        },
+        signUserUp({commit, getters},payload){
             commit('clearError')
             firebase.auth().createUserWithEmailAndPassword(payload.email, payload.password)
                 .then(
@@ -83,6 +92,11 @@ export const store = new Vuex.Store({
                         }
                         commit('setUser', newUser)
                     }
+                )
+                .then(()=>{
+                    let userId=getters.user.id
+                    db.ref('/workers/'+[userId]).set({name:payload.email})
+                }
                 )
                 .catch(
                     error=>{
@@ -120,11 +134,11 @@ export const store = new Vuex.Store({
         clearError({commit}){
             commit('clearError')
         },
-        setLoading({commit}, payload){
-            commit('setLoading', payload)
+        setError({commit}, payload){
+            commit('setError', payload)
         }
     },
-    getters:{   
+    getters:{
         user (state){
             return state.user
         },
