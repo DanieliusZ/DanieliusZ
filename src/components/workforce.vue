@@ -1,5 +1,5 @@
 <template>
-    <v-container v-if="userId==='lWBtrx64p6PkP6jKvC84jxTaEfr1'||userId==='pSMXNyec1AfD666QYpxFXxpkv3I2'">
+    <v-container v-if="userId===adminId">
         <v-layout row v-if="error">
             <v-flex>
                 <app-alert @dismissed="onDismissed" :text="error.message"></app-alert>
@@ -12,14 +12,14 @@
                         <v-list-tile v-for="(item, index) in workersInfo" :key="index" >
                             <v-list-tile-content >
                                 <v-btn @click="identifyWorker(index, item['.key'])" outline active-class="pactive" :class="{ pactive: selectedWorkerArrN===index}">
-                                {{item.name}}                                
+                                {{item.name}}
                                 </v-btn>
                             </v-list-tile-content>
                         </v-list-tile>
-                    </v-list> 
+                    </v-list>
                     <v-flex class="text-xs-right aligned">
                         <input v-model="renamer" class="text-xs-left forname" type="text">
-                        <v-btn type="submit" @click="rename">Change Name</v-btn> 
+                        <v-btn type="submit" @click="rename">Change Name</v-btn>
                     </v-flex>
                 </v-layout>
             </v-card>
@@ -76,7 +76,7 @@
                     <td class="text-xs-right">{{ props.item.totalTime | toDigits}}</td>
                     <td class="text-xs-right">{{ props.item.saveTime | date}}</td>
                     </template>
-                </v-data-table>                
+                </v-data-table>
             </v-flex>
             <v-flex md4>
                 <v-card class="text-xs-center">
@@ -109,10 +109,10 @@
                                     </v-card-actions>
                                 </template>
                             </v-date-picker>
-                        </v-menu>             
+                        </v-menu>
                         Rate: <input v-model="hourlyRate" class="text-xs-center" type="number">
                         <v-btn small @click="onSetHourlyRate">Set Hourly Rate</v-btn>
-                </v-card>    
+                </v-card>
                 <v-divider></v-divider>
                 <v-card class="text-xs-center">
                     <v-card-text>
@@ -127,9 +127,9 @@
                             <h4>Earned</h4>
                             <p>
                                 {{earnedThisMonth}}£
-                            </p> 
+                            </p>
                         </v-flex>
-                    </v-layout>   
+                    </v-layout>
                 </v-card>
                 <v-divider ></v-divider>
                 <v-card class="text-xs-center">
@@ -152,13 +152,9 @@
                         <v-expansion-panel  v-if="currentWorkerName!==''">
                             <v-expansion-panel-content>
                                 <div slot="header">Monthly information</div>
-                                <v-list>
-                                    <v-list-tile class="nofloat" v-for="(item, index) in selectedYearEarnings" :key="index">
-                                        <v-list-tile-content class="smaled">
-                                            <b>{{item.month|toMonths}}</b> Total work hours - {{item.totalWorkTime|toDigits}} | Total earned: {{item.totalEarned}}£ | Rate: {{item.rate}}£
-                                        </v-list-tile-content>
-                                    </v-list-tile>
-                                </v-list>
+                                <v-card-text v-for="(item, index) in selectedYearEarnings" :key="index">
+                                    <b>{{item.month|toMonths}}</b> Total work hours - {{item.totalWorkTime|toDigits}} | Total earned: {{item.totalEarned|toDecim}}£ | Rate: {{item.rate}}£
+                                </v-card-text>
                             </v-expansion-panel-content>
                         </v-expansion-panel>
                     </v-layout>
@@ -176,12 +172,12 @@
                                         Amount: <input block v-model="monthlyPayment" class="text-xs-left extend" type="number"> £
                                     </div>
                                     <div class="spaced">
-                                        Description: <input block v-model="paymentDescription" class="text-xs-left extend" type="text">                                 
+                                        Description: <input block v-model="paymentDescription" class="text-xs-left extend" type="text">
                                     </div>
-                                    <v-btn block type="submit" @click="addPayment">Add Payment</v-btn>                                    
-                                </v-card-text>                             
-                            </v-card>  
-                        </v-flex>                     
+                                    <v-btn block type="submit" @click="addPayment">Add Payment</v-btn>
+                                </v-card-text>
+                            </v-card>
+                        </v-flex>
                     </v-layout>
                     <v-divider></v-divider>
                     <v-card>
@@ -228,9 +224,12 @@
 
 <script>
 import {db} from '../firebase'
+import {adminID} from '../admin';
+
 export default {
     data(){
         return{
+            adminId:adminID,
             userId:this.$store.getters.user.id,
             workersInfo:{},
             menu:false,
@@ -279,7 +278,7 @@ export default {
                 info.sort((a,b)=>{
                     return a.day-b.day
                 })
-                return info   
+                return info
             }
             else return []
         },
@@ -328,7 +327,7 @@ export default {
                     element.forEach(el=>{
                         if(el.hasOwnProperty('totalTime'))
                         hoursByMonth.push(el.totalTime)
-                    })                    
+                    })
                 })
                 return hoursByMonth.reduce((a,b)=>a+b,0)
             } else return 0
@@ -379,7 +378,7 @@ export default {
                 })
                 return finalInfo
             }
-            else return 0                   
+            else return 0
         },
         selectedYearTotalEarnings(){
             if(!this.selectedYearEarnings||!this.selectedYearHours){
@@ -498,7 +497,7 @@ export default {
                 load:{name:this.renamer}
             }
             this.$store.dispatch('changeName', newName)
-            this.renamer=''          
+            this.renamer=''
         },
         onSetHourlyRate(){
             if(!this.selectedWorkerId||!this.monthOfSelectedRate){
@@ -511,7 +510,7 @@ export default {
                 year:new Date(this.monthOfSelectedRate).getFullYear(),
                 rate:{[month]:parseFloat(this.hourlyRate)}
             }
-            this.$store.dispatch('setHourlyRate', load)   
+            this.$store.dispatch('setHourlyRate', load)
         },
         onDismissed (){
             this.$store.dispatch('clearError')
@@ -527,12 +526,12 @@ export default {
     h4{
         width:100%;
     }
-    input[type=number]::-webkit-inner-spin-button, 
-    input[type=number]::-webkit-outer-spin-button { 
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    margin: 0; 
+    margin: 0;
     }
     input{
         border:1px solid teal;

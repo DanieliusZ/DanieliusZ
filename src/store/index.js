@@ -76,7 +76,6 @@ export const store = new Vuex.Store({
             db.ref('/workers/'+[payload.workerId]+'/'+payload.year+'/payments').child(payload.paymentId).remove()
         },
         changeName({commit}, payload){
-            // console.log(payload)
             db.ref('/workers/'+[payload.id]+'/').update(payload.load)
         },
         setHourlyRate({}, payload){
@@ -139,7 +138,7 @@ export const store = new Vuex.Store({
             commit('setError', payload)
         }
     },
-    getters:{   
+    getters:{
         user (state){
             return state.user
         },

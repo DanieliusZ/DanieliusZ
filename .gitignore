@@ -16,3 +16,7 @@ yarn-error.log*
 
 *.firebaserc
 firebase.json
+src/firebase.js
+src/admin.js
+src/components/dashboard.*.vue
+src/components/workforce.*.vue

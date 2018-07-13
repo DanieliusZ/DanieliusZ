@@ -14,6 +14,7 @@ import DateFilter from './filters/date'
 import MinutesFilter from './filters/minutes'
 import TimeDigitalFilter from './filters/to-time'
 import MonthsFilter from './filters/months'
+import DecimelFilter from './filters/toFixed'
 import AlertCmp from './components/Shared/Alert.vue'
 import VueFire from 'vuefire'
 
@@ -25,6 +26,7 @@ Vue.filter('date', DateFilter)
 Vue.filter('minutes', MinutesFilter)
 Vue.filter('toDigits', TimeDigitalFilter)
 Vue.filter('toMonths', MonthsFilter)
+Vue.filter('toDecim', DecimelFilter)
 Vue.component('app-alert', AlertCmp)
 
 /* eslint-disable no-new */
